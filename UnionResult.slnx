@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/UnionResult.Benchmarks/UnionResult.Benchmarks.csproj" Id="038398d4-9d20-4d0c-a353-81f4b4c2ffd9" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
