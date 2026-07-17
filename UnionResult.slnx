@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Solution Items/src/">
+    <File Path="src/Directory.Build.props" />
+  </Folder>
+  <Folder Name="/Solution Items/tests/">
+    <File Path="tests/Directory.Build.props" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/UnionResult/UnionResult.csproj" Id="c40c4e59-9528-4c4c-81b7-a103983aee98" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/UnionResult.Tests/UnionResult.Tests.csproj" Id="9979a4e4-ae80-4395-95e3-9c6ab5778ecd" />
+  </Folder>
+</Solution>
