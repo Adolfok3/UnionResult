@@ -4,15 +4,17 @@ using UnionResult;
 namespace UnionResult.Benchmarks;
 
 /// <summary>
-/// Compares the two packages when T is a value type (int). UnionResult.Result&lt;T&gt;
-/// stores its payload as `object`, so every success value gets boxed; OperationResult.Result&lt;T&gt;
-/// stores T directly in a typed field, avoiding the boxing allocation.
+/// Compares the two packages when T is a value type (int). Result&lt;T&gt; stores T and
+/// Exception in their own typed fields behind a tag (the union "non-boxing access
+/// pattern" via TryGetValue), so AsValue()/AsException() never box; OperationResult.Result&lt;T&gt;
+/// likewise stores T directly in a typed field. Both packages still expose a boxing
+/// `object? Value` property (required by IUnion for UnionResult; OperationResult has no
+/// such requirement but its own `.Value` is already unboxed for value types), but neither
+/// AsValue() nor a normal consumer needs to go through it.
 ///
-/// Create and Read are benchmarked separately: a naive "create + immediately read back"
-/// benchmark lets the JIT prove the box never escapes and eliminate it entirely, which would
-/// hide the very difference this benchmark exists to show. Returning the raw boxed
-/// reference from Create (instead of unboxing it) and reading from an already-built,
-/// pre-escaped instance in Read keeps each phase honest.
+/// Create and Read are benchmarked separately so the cost of producing a Result isn't
+/// conflated with the cost of consuming one. Both go through the non-boxing accessor
+/// (AsValue()/.Value) so the numbers reflect how the API is actually meant to be used.
 /// </summary>
 [Config(typeof(InProcessConfig))]
 public class ValueTypeResultBenchmarks
@@ -35,7 +37,7 @@ public class ValueTypeResultBenchmarks
     }
 
     [Benchmark]
-    public object UnionResultCreateSuccess() => Result<int>.Success(SuccessValue).Value!;
+    public int UnionResultCreateSuccess() => Result<int>.Success(SuccessValue).AsValue();
 
     [Benchmark]
     public int OperationResultCreateSuccess() => OperationResult.Result.Success(SuccessValue).Value;

@@ -8,7 +8,8 @@ namespace UnionResult.Benchmarks;
 /// needs to box a reference type, so this isolates the pure wrapping/reading overhead
 /// of each Result shape from the boxing cost measured in <see cref="ValueTypeResultBenchmarks"/>.
 /// Create and Read are benchmarked separately for the same reason as the value-type case:
-/// it keeps the two costs (producing vs consuming a Result) from being conflated.
+/// it keeps the two costs (producing vs consuming a Result) from being conflated. Both use
+/// the non-boxing accessor (AsValue()/.Value), matching normal API usage.
 /// </summary>
 [Config(typeof(InProcessConfig))]
 public class ReferenceTypeResultBenchmarks
@@ -31,7 +32,7 @@ public class ReferenceTypeResultBenchmarks
     }
 
     [Benchmark]
-    public object UnionResultCreateSuccess() => Result<Product>.Success(SuccessValue).Value!;
+    public Product UnionResultCreateSuccess() => Result<Product>.Success(SuccessValue).AsValue();
 
     [Benchmark]
     public Product OperationResultCreateSuccess() => OperationResult.Result.Success(SuccessValue).Value!;

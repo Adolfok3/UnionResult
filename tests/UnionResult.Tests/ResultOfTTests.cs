@@ -32,6 +32,16 @@ public class ResultOfTTests
     }
 
     [Fact]
+    public void Failure_WithNullException_ThrowsArgumentNullException()
+    {
+        // Act
+        var act = () => Result<int>.Failure(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
     public void AsValue_OnFailure_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -84,43 +94,42 @@ public class ResultOfTTests
     }
 
     [Fact]
-    public void Success_WithNullReferenceValue_IsReportedAsSuccessButAsValueThrows()
+    public void Success_WithNullReferenceValue_IsReadableAsValue()
     {
-        // Documents a current limitation: a null-pattern check ("Value is T value")
-        // never matches null, so a success created from a null reference cannot be
-        // read back via AsValue(), even though IsSuccess is true.
+        // The tag-based discriminator (rather than a "Value is T value" pattern check)
+        // means a success built from a null reference round-trips correctly.
 
         // Act
         var result = Result<string?>.Success(null);
-        var act = () => result.AsValue();
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        act.Should().Throw<InvalidOperationException>();
+        result.AsValue().Should().BeNull();
     }
 
     [Fact]
-    public void Default_OfValueTypeResult_IsReportedAsSuccessButAsValueThrows()
+    public void Default_OfValueTypeResult_IsNeitherSuccessNorFailure()
     {
-        // Documents a current limitation: an uninitialized (default) Result<T> has a
-        // null backing Value, so it looks like success (no exception present) but
-        // AsValue() cannot produce a T out of that null.
+        // An uninitialized (default) Result<T> has tag 0, which the tag-based
+        // discriminator reports as neither success nor failure.
 
         // Act
         var result = default(Result<int>);
-        var act = result.AsValue;
+        var asValue = result.AsValue;
+        var asException = result.AsException;
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        act.Should().Throw<InvalidOperationException>();
+        result.IsSuccess.Should().BeFalse();
+        result.IsFailure.Should().BeFalse();
+        asValue.Should().Throw<InvalidOperationException>();
+        asException.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
-    public void Success_WhenTIsAnExceptionType_IsMisclassifiedAsFailure()
+    public void Success_WhenTIsAnExceptionType_IsStillClassifiedAsSuccess()
     {
-        // Documents a current limitation: the success/failure discriminator is based
-        // solely on "Value is Exception", so Result<T> cannot safely wrap a T that is
-        // itself an Exception (or subtype) — it always reads back as a failure.
+        // The tag-based discriminator (rather than "Value is Exception") means
+        // Result<T> can safely wrap a T that is itself an Exception (or subtype).
 
         // Arrange
         var payload = new ArgumentException("payload, not a real failure");
@@ -129,12 +138,12 @@ public class ResultOfTTests
         var result = Result<ArgumentException>.Success(payload);
 
         // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.IsFailure.Should().BeTrue();
-
-        // Both accessors still resolve to the same underlying instance.
+        result.IsSuccess.Should().BeTrue();
+        result.IsFailure.Should().BeFalse();
         result.AsValue().Should().BeSameAs(payload);
-        result.AsException().Should().BeSameAs(payload);
+
+        var asException = result.AsException;
+        asException.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]

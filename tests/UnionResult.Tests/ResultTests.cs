@@ -69,16 +69,13 @@ public class ResultTests
     }
 
     [Fact]
-    public void Failure_WithNullException_IsReportedAsSuccessButAsExceptionThrows()
+    public void Failure_WithNullException_ThrowsArgumentNullException()
     {
         // Act
-        var result = Result.Failure(null!);
-        var act = () => result.AsException();
+        var act = () => Result.Failure(null!);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        result.IsFailure.Should().BeFalse();
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().Throw<ArgumentNullException>();
     }
 
     [Theory]
