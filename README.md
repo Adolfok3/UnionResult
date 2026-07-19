@@ -1,6 +1,6 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Adolfok3/UnionResult/main/assets/icon.png" alt="UnionResult" />
-</p>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Adolfok3/UnionResult/main/assets/icon.png" alt="UnionResult">
+</div>
 
 # UnionResult
 
