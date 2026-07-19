@@ -3,25 +3,41 @@ using System.Runtime.CompilerServices;
 namespace UnionResult;
 
 /// <summary>
-/// Manually implemented union (rather than the `union Result&lt;T&gt;(T, Exception)`
-/// declaration sugar) so value-type T is stored in its own typed field instead of the
-/// compiler's single boxing `object Value` field. Discrimination uses an explicit tag
-/// instead of `Value is Exception`, and AsValue/AsException go through TryGetValue - the
-/// C# union "non-boxing access pattern" - so success/failure checks and reads never box.
+/// Represents the outcome of an operation that returns a value of type
+/// <typeparamref name="T"/>: either a success carrying that value, or a failure
+/// carrying the <see cref="Exception"/> that caused it. Use it in place of throwing for
+/// failures that are an expected, ordinary outcome of the operation - the caller decides
+/// how to react instead of having to catch an exception.
 /// </summary>
-/// <typeparam name="T">The type of the success value.</typeparam>
+/// <typeparam name="T">The type of the value returned on success.</typeparam>
+/// <example>
+/// <code>
+/// Result&lt;int&gt; Divide(int a, int b) =>
+///     b == 0
+///         ? Result&lt;int&gt;.Failure(new DivideByZeroException())
+///         : Result&lt;int&gt;.Success(a / b);
+///
+/// var result = Divide(10, 2);
+/// var message = result.IsSuccess
+///     ? $"Result: {result.AsValue()}"
+///     : $"Failed: {result.AsException().Message}";
+/// </code>
+/// </example>
+/// <remarks>
+/// Because <see cref="Result{T}"/> is a C# union type, it also supports exhaustive
+/// pattern matching: <c>result switch { int value => ..., Exception ex => ... }</c>.
+/// </remarks>
 [Union]
 public readonly struct Result<T> : IUnion
 {
     private readonly T _value;
     private readonly Exception? _exception;
-    private readonly byte _tag;
+    private readonly State _state;
 
     public Result(T value)
     {
         _value = value;
-        _exception = null;
-        _tag = 1;
+        _state = State.Success;
     }
 
     public Result(Exception exception)
@@ -30,21 +46,28 @@ public readonly struct Result<T> : IUnion
 
         _value = default!;
         _exception = exception;
-        _tag = 2;
+        _state = State.Failure;
     }
 
-    public object? Value => _tag switch
+    private enum State : byte
     {
-        1 => _value,
-        2 => _exception,
+        Empty,
+        Success,
+        Failure,
+    }
+
+    public object? Value => _state switch
+    {
+        State.Success => _value,
+        State.Failure => _exception,
         _ => null,
     };
 
-    public bool HasValue => _tag != 0;
+    public bool HasValue => _state != State.Empty;
 
-    public bool IsSuccess => _tag == 1;
+    public bool IsSuccess => _state == State.Success;
 
-    public bool IsFailure => _tag == 2;
+    public bool IsFailure => _state == State.Failure;
 
     public static Result<T> Success(T value) => new(value);
 
@@ -53,53 +76,61 @@ public readonly struct Result<T> : IUnion
     public bool TryGetValue(out T value)
     {
         value = _value!;
-        return _tag == 1;
+        return _state == State.Success;
     }
 
     public bool TryGetValue(out Exception value)
     {
         value = _exception!;
-        return _tag == 2;
+        return _state == State.Failure;
     }
 
-    public T AsValue() => TryGetValue(out T value)
-            ? value
-            : throw new InvalidOperationException(
-                "Result does not contain a value.");
+    public T AsValue() => ResultAccessor.OrThrow(
+        TryGetValue(out T value), value, "Result does not contain a value.");
 
-    public Exception AsException() => TryGetValue(out Exception value)
-            ? value
-            : throw new InvalidOperationException(
-                "Result does not contain an exception.");
+    public Exception AsException() => ResultAccessor.OrThrow(
+        TryGetValue(out Exception value), value, "Result does not contain an exception.");
 }
 
 /// <summary>
-/// Manually implemented union mirroring <see cref="Result{T}"/>'s tag-based approach.
-/// There is no value-type case here, so boxing was never a concern for this type; the
-/// rewrite keeps it consistent with <see cref="Result{T}"/> and guards against a null
-/// exception being treated as success.
+/// Represents the outcome of an operation that has no return value: either a plain
+/// success, or a failure carrying the <see cref="Exception"/> that caused it. Use it in
+/// place of throwing for failures that are an expected, ordinary outcome of the
+/// operation - the caller decides how to react instead of having to catch an exception.
 /// </summary>
+/// <example>
+/// <code>
+/// Result Save(User user) =>
+///     repository.TrySave(user, out var error)
+///         ? Result.Success()
+///         : Result.Failure(error);
+///
+/// var result = Save(user);
+/// if (result.IsFailure)
+/// {
+///     logger.LogError(result.AsException(), "Failed to save user");
+/// }
+/// </code>
+/// </example>
 [Union]
 public readonly struct Result : IUnion
 {
     private readonly Exception? _exception;
-    private readonly byte _tag;
 
     public Result(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
         _exception = exception;
-        _tag = 1;
     }
 
-    public object? Value => _tag == 1 ? _exception : null;
+    public object? Value => _exception;
 
-    public bool HasValue => _tag != 0;
+    public bool HasValue => _exception is not null;
 
-    public bool IsSuccess => _tag == 0;
+    public bool IsSuccess => _exception is null;
 
-    public bool IsFailure => _tag == 1;
+    public bool IsFailure => _exception is not null;
 
     public static Result Success() => default;
 
@@ -108,11 +139,19 @@ public readonly struct Result : IUnion
     public bool TryGetValue(out Exception value)
     {
         value = _exception!;
-        return _tag == 1;
+        return _exception is not null;
     }
 
-    public Exception AsException() => TryGetValue(out Exception value)
-            ? value
-            : throw new InvalidOperationException(
-                "Result does not contain an exception.");
+    public Exception AsException() => ResultAccessor.OrThrow(
+        TryGetValue(out Exception value), value, "Result does not contain an exception.");
+}
+
+/// <summary>
+/// Shared "throw if not found" helper for the TryGetValue-based accessors above, so
+/// AsValue/AsException don't each repeat their own throw expression.
+/// </summary>
+file static class ResultAccessor
+{
+    public static TValue OrThrow<TValue>(bool found, TValue value, string message) =>
+        found ? value : throw new InvalidOperationException(message);
 }
