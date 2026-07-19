@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Adolfok3/UnionResult/main/assets/icon.png" alt="UnionResult" width="150" />
+  <img src="https://raw.githubusercontent.com/Adolfok3/UnionResult/main/assets/icon.png" alt="UnionResult" />
 </p>
 
 # UnionResult
@@ -149,15 +149,15 @@ var message = result switch
 
 ### API reference
 
-| Member | Description |
-|---|---|
-| `Result<T>.Success(T value)` / `Result.Success()` | Creates a successful result. |
-| `Result<T>.Failure(Exception)` / `Result.Failure(Exception)` | Creates a failed result. Throws `ArgumentNullException` if `exception` is `null`. |
-| `IsSuccess` / `IsFailure` | Whether the result is a success or a failure. |
-| `AsValue()` *(`Result<T>` only)* | Returns the success value, or throws `InvalidOperationException` if the result is a failure. |
-| `AsException()` | Returns the failure's exception, or throws `InvalidOperationException` if the result is a success. |
-| `TryGetValue(out T value)` / `TryGetValue(out Exception value)` | Non-throwing variants of `AsValue()`/`AsException()`. |
-| `HasValue` | Whether the result holds any case at all (`false` only for `default(Result<T>)`). |
+| Member                                                          | Description                                                                                        |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `Result<T>.Success(T value)` / `Result.Success()`               | Creates a successful result.                                                                       |
+| `Result<T>.Failure(Exception)` / `Result.Failure(Exception)`    | Creates a failed result. Throws `ArgumentNullException` if `exception` is `null`.                  |
+| `IsSuccess` / `IsFailure`                                       | Whether the result is a success or a failure.                                                      |
+| `AsValue()` _(`Result<T>` only)_                                | Returns the success value, or throws `InvalidOperationException` if the result is a failure.       |
+| `AsException()`                                                 | Returns the failure's exception, or throws `InvalidOperationException` if the result is a success. |
+| `TryGetValue(out T value)` / `TryGetValue(out Exception value)` | Non-throwing variants of `AsValue()`/`AsException()`.                                              |
+| `HasValue`                                                      | Whether the result holds any case at all (`false` only for `default(Result<T>)`).                  |
 
 ## Benchmarks
 
@@ -165,26 +165,26 @@ var message = result switch
 
 **Environment:** BenchmarkDotNet v0.15.8, Windows 11, AMD Ryzen 7 7800X3D 4.20GHz, .NET SDK 11.0.100-preview.5, in-process toolchain.
 
-| Category | Operation | UnionResult | OperationResult | Allocated | Winner |
-|---|---|---:|---:|:---:|---|
-| **Value type (int)** | Create Success | 0.0044 ns | 0.0000 ns | 0 B (both) | tie (noise) |
-| | Create Failure | 0.2049 ns | 0.6265 ns | 0 B (both) | UnionResult (~3x) |
-| | Read Success | 0.4157 ns | 0.0023 ns | 0 B (both) | OperationResult |
-| | Read Failure | 0.6244 ns | 0.2201 ns | 0 B (both) | OperationResult (~3x) |
-| **Reference type (Product)** | Create Success | 0.1977 ns | 0.2250 ns | 0 B (both) | tie |
-| | Create Failure | 0.2374 ns | 1.1618 ns | 0 B (both) | UnionResult (~5x) |
-| | Read Success | 0.6298 ns | 0.2062 ns | 0 B (both) | OperationResult (~3x) |
-| | Read Failure | 0.6286 ns | 0.2114 ns | 0 B (both) | OperationResult (~3x) |
-| **No payload** | Create Success | 0.0001 ns | 0.0024 ns | 0 B (both) | tie (noise) |
-| | Create Failure | 0.2248 ns | 0.6071 ns | 0 B (both) | UnionResult (~2.7x) |
-| | Read Success | 0.0327 ns | 0.0005 ns | 0 B (both) | tie (noise) |
-| | Read Failure | 0.6227 ns | 0.2338 ns | 0 B (both) | OperationResult (~2.7x) |
+| Category                     | Operation      | UnionResult | OperationResult | Allocated  | Winner                  |
+| ---------------------------- | -------------- | ----------: | --------------: | :--------: | ----------------------- |
+| **Value type (int)**         | Create Success |   0.0044 ns |       0.0000 ns | 0 B (both) | tie (noise)             |
+|                              | Create Failure |   0.2049 ns |       0.6265 ns | 0 B (both) | UnionResult (~3x)       |
+|                              | Read Success   |   0.4157 ns |       0.0023 ns | 0 B (both) | OperationResult         |
+|                              | Read Failure   |   0.6244 ns |       0.2201 ns | 0 B (both) | OperationResult (~3x)   |
+| **Reference type (Product)** | Create Success |   0.1977 ns |       0.2250 ns | 0 B (both) | tie                     |
+|                              | Create Failure |   0.2374 ns |       1.1618 ns | 0 B (both) | UnionResult (~5x)       |
+|                              | Read Success   |   0.6298 ns |       0.2062 ns | 0 B (both) | OperationResult (~3x)   |
+|                              | Read Failure   |   0.6286 ns |       0.2114 ns | 0 B (both) | OperationResult (~3x)   |
+| **No payload**               | Create Success |   0.0001 ns |       0.0024 ns | 0 B (both) | tie (noise)             |
+|                              | Create Failure |   0.2248 ns |       0.6071 ns | 0 B (both) | UnionResult (~2.7x)     |
+|                              | Read Success   |   0.0327 ns |       0.0005 ns | 0 B (both) | tie (noise)             |
+|                              | Read Failure   |   0.6227 ns |       0.2338 ns | 0 B (both) | OperationResult (~2.7x) |
 
 **Takeaways:**
 
 - Neither package allocates in any scenario measured.
 - `UnionResult` matches or beats `OperationResult` on every `Create` scenario - notably ~3-5x faster creating a failure.
-- `OperationResult` is consistently faster to *read* an already-built result (~0.2-0.4 ns) - `AsValue()`/`AsException()` validate the result's state before returning, which is the cost of that safety check.
+- `OperationResult` is consistently faster to _read_ an already-built result (~0.2-0.4 ns) - `AsValue()`/`AsException()` validate the result's state before returning, which is the cost of that safety check.
 - Values under ~0.03 ns aren't meaningful differences - that's the measurement floor of the benchmark itself.
 
 The benchmark source lives in [`benchmarks/UnionResult.Benchmarks`](./benchmarks/UnionResult.Benchmarks).
