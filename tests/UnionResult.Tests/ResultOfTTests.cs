@@ -32,6 +32,69 @@ public class ResultOfTTests
     }
 
     [Fact]
+    public void Value_OnSuccess_ReturnsTheBoxedValue()
+    {
+        // Act
+        var result = Result<int>.Success(42);
+
+        // Assert
+        result.Value.Should().Be(42);
+    }
+
+    [Fact]
+    public void Value_OnFailure_ReturnsTheException()
+    {
+        // Arrange
+        var exception = new InvalidOperationException("boom");
+
+        // Act
+        var result = Result<int>.Failure(exception);
+
+        // Assert
+        result.Value.Should().BeSameAs(exception);
+    }
+
+    [Fact]
+    public void Value_OnDefault_IsNull()
+    {
+        // Act
+        var result = default(Result<int>);
+
+        // Assert
+        result.Value.Should().BeNull();
+    }
+
+    [Fact]
+    public void HasValue_OnSuccess_IsTrue()
+    {
+        // Act
+        var result = Result<int>.Success(42);
+
+        // Assert
+        result.HasValue.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasValue_OnFailure_IsTrue()
+    {
+        // Act
+        var result = Result<int>.Failure(new InvalidOperationException("boom"));
+
+        // Assert
+        result.HasValue.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasValue_OnDefault_IsFalse()
+    {
+        // Act
+        var result = default(Result<int>);
+
+        // Assert
+        result.HasValue.Should().BeFalse();
+    }
+
+    [Fact]
     public void Failure_WithNullException_ThrowsArgumentNullException()
     {
         // Act

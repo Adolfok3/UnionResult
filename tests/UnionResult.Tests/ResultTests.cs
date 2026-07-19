@@ -30,6 +30,52 @@ public class ResultTests
     }
 
     [Fact]
+    public void Value_OnSuccess_IsNull()
+    {
+        // Act
+        var result = Result.Success();
+
+        // Assert
+        result.Value.Should().BeNull();
+    }
+
+    [Fact]
+    public void Value_OnFailure_ReturnsTheException()
+    {
+        // Arrange
+        var exception = new InvalidOperationException("boom");
+
+        // Act
+        var result = Result.Failure(exception);
+
+        // Assert
+        result.Value.Should().BeSameAs(exception);
+    }
+
+    [Fact]
+    public void HasValue_OnSuccess_IsFalse()
+    {
+        // Success carries no payload, so HasValue only reflects whether there's an
+        // exception - it isn't a general "is this a valid result" check.
+
+        // Act
+        var result = Result.Success();
+
+        // Assert
+        result.HasValue.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasValue_OnFailure_IsTrue()
+    {
+        // Act
+        var result = Result.Failure(new InvalidOperationException("boom"));
+
+        // Assert
+        result.HasValue.Should().BeTrue();
+    }
+
+    [Fact]
     public void AsException_OnFailure_ReturnsTheOriginalExceptionInstance()
     {
         // Arrange
