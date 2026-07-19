@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "UnionResult.Benchmarks": {
+      "commandName": "Project",
+      "hotReloadEnabled": false
+    }
+  }
+}
