@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Adolfok3/UnionResult/main/assets/icon.png" alt="UnionResult" width="150" />
+</p>
+
 # UnionResult
 
 [![NuGet](https://img.shields.io/nuget/v/UnionResult.svg)](https://www.nuget.org/packages/UnionResult/)
