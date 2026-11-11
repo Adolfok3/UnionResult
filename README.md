@@ -6,7 +6,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/UnionResult.svg)](https://www.nuget.org/packages/UnionResult/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![.NET 11](https://img.shields.io/badge/.NET-11.0--preview-512BD4)](https://dotnet.microsoft.com/)
+[![.NET 11](https://img.shields.io/badge/.NET-11.0-512BD4)](https://dotnet.microsoft.com/)
 [![C# union types](https://img.shields.io/badge/C%23-union%20types-informational)](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/union)
 [![main](https://github.com/Adolfok3/UnionResult/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Adolfok3/UnionResult/actions/workflows/main.yml)
 [![tests](https://img.shields.io/github/actions/workflow/status/Adolfok3/UnionResult/main.yml?branch=main&label=tests)](https://github.com/Adolfok3/UnionResult/actions/workflows/main.yml)
@@ -19,18 +19,15 @@ A Result pattern implementation for .NET, built on top of C#'s new native `union
 
 `UnionResult` isn't about functional programming for its own sake - it exists to avoid unnecessary exception overhead in everyday application code. Throwing and catching exceptions is expensive and meant for truly exceptional situations, not for outcomes an operation can expect and a caller should routinely handle (validation failures, "not found", a downstream call that failed). `Result`/`Result<T>` let a method return both possible outcomes explicitly, so the caller decides how to react instead of wrapping every call in `try`/`catch`.
 
-Several packages already implement this pattern for .NET. What sets `UnionResult` apart is the implementation: instead of a hand-rolled discriminated-union struct, it's built directly on top of C#'s new native `union` type (introduced as a preview language feature in .NET 11) - success/failure is a real, compiler-recognized union with exhaustive pattern-matching support, not a struct that merely looks like one.
+Several packages already implement this pattern for .NET. What sets `UnionResult` apart is the implementation: instead of a hand-rolled discriminated-union struct, it's built directly on top of C#'s new native `union` type (introduced as a language feature in .NET 11) - success/failure is a real, compiler-recognized union with exhaustive pattern-matching support, not a struct that merely looks like one.
 
 ## Requirements
 
-Union types are a **preview C# language feature**. To use this package your project needs:
+Union types are a **C# 15 feature**. To use this package your project needs:
 
 ```xml
 <TargetFramework>net11.0</TargetFramework>
-<LangVersion>preview</LangVersion>
 ```
-
-and the .NET 11 preview SDK.
 
 ## Installation
 
